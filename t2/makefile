@@ -1,5 +1,5 @@
 CFLAGS =  -Wall -Wextra
-CC = c++ 
+CC = c++ -g
 
 all: despachar
 
