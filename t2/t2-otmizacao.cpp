@@ -21,7 +21,7 @@ vector<ator> atores = {}; //vetor de atores
 std::vector<int> inclusao_geral = {};
 std::vector<int> x = {}; 		//melhor conjunto ate agora
 std::vector<int> optx = {}; 	//melhor conjunto ate agora
-int optp = 999999999;	//melhor custo ate agora 
+int optp = 99999999;	//melhor custo ate agora 
 int tam_atores;
 int tam_inclusao;
 int tam_personagens;
@@ -38,39 +38,16 @@ void ler_entrada(){
 		ator aux; 
 		int count;
 		cin >> aux.preco >> count;
+		cout << aux.preco << " " <<count << "\n";
 		for (int j = 0; j < count; j++){
 			int aux2;
 			cin >> aux2;
+			cout << aux2<< "\n";
 			aux.inclusao.push_back(aux2);
 		}
-		cout << aux.inclusao.size() << "\n";
+		//cout << aux.inclusao.size() << "\n";
 		atores.push_back(aux);
 	}
-}
-
-int viavel(std::vector<int> x){
-	int soma = 0;
-	for (uint i = 0; i < x.size(); i++){
-		soma += x.at(i);
-	}
-	if (soma == tam_personagens){
-		cout << tam_inclusao << "\n";
-		vector<int> inclusao(tam_inclusao,0);
-		for (uint i = 0; i < x.size(); i++){
-			cout << atores.at(i).preco << atores.at(i).inclusao.size() <<"\n";
-			for (uint j = 0; j < atores.at(i).inclusao.size(); j++){
-				cout << atores.at(i).inclusao.at(j) << "\n";
-				inclusao.at(atores.at(i).inclusao.at(j)-1) = 1;
-			}
-		}
-		for (uint i = 0; i < inclusao.size(); i++){
-			if (inclusao.at(i) == 0){
-				return 0;
-			}
-		}
-		return 1;	
-	}
-	return 0;
 }
 
 int profit(std::vector<int> x){
@@ -81,23 +58,84 @@ int profit(std::vector<int> x){
 	return preco;
 }
 
-std::vector<int> calculaCL(int l){
-	std::vector<int> cl = {1,0} ;
+int viavel(std::vector<int> x){
 	int soma = 0;
 	for (uint i = 0; i < x.size(); i++){
 		soma += x.at(i);
 	}
-	if (soma > tam_personagens){
-		cl = {0};
-	} 
+	vector<int> inclusao_a(tam_inclusao,0);
+	if (soma == tam_personagens){
+		//cout << tam_inclusao << "\n";
+		for (uint i = 0; i < x.size(); i++){
+			if(x.at(i) == 1){
+				//cout << atores.at(i).preco << atores.at(i).inclusao.size() <<"\n";
+				for (uint j = 0; j < atores.at(i).inclusao.size(); j++){
+					//cout << atores.at(i).inclusao.at(j) << "\n";
+					inclusao_a.at(atores.at(i).inclusao.at(j) - 1) = 1;
+				}
+			}	
+		}
+		cout << "entrada = " ;
+		for (uint k = 0; k < x.size(); ++k){
+			cout << x.at(k) << " ";
+		}
+		cout << "\n";
+		cout << "profit = " << profit(x) << "\n" << "inclusao = ";
+		for (uint k = 0; k < inclusao_a.size(); ++k){
+			cout << inclusao_a.at(k) << " ";
+		}
+		cout << "\n";
+		for (uint k = 0; k < inclusao_a.size(); ++k){
+			if (inclusao_a.at(k) == 0){
+				return 0;
+			}
+		}
+		return 1;	
+	}
+	return 0;
+}
+
+
+
+std::vector<int> calculaCL(int l){
+	std::vector<int> cl = {1,0} ;
+	int soma = 0;
+	if (viabilidade == 0){
+		for (uint i = 0; i < x.size(); i++){
+			soma += x.at(i);
+		}
+		if (soma >= tam_personagens){
+			cl = {0};
+		} 
+	}	
 	if (l == tam_atores){
 		cl = {};
-	}
+	}	
 	return cl;
 }
 
+int menor_ator(std::vector<int> x){
+	int menor = 99999999;
+	for (uint i = 0; i < x.size(); i++){
+		if (x.at(i) == 0 && atores.at(i).preco < menor){
+			cout << "menor = " << atores.at(i).preco << "\n";
+			menor = atores.at(i).preco;
+		}
+	}
+	return menor;
+}
+
 int B(std::vector<int> x){
-	return 1; 
+	int base = profit(x);
+	int soma = 0;
+	for (uint i = 0; i < x.size(); i++){
+			soma += x.at(i);
+		}
+	if(soma < tam_personagens){
+		base += (tam_personagens - soma) * menor_ator(x);
+	}
+	cout << "B = " << base << "\n";
+	return base;	
 }
 //mais comentado so se eu comentar os comentarios
 void branch_and_bound(int l){
@@ -109,20 +147,29 @@ void branch_and_bound(int l){
 			optx = x; //optx atualizado de revesgueio na batalha de P e optp 
 		}
 	}
-	printf("aqui\n");
+	else{
+		cout << "entrada = " ;
+		for (uint k = 0; k < x.size(); ++k){
+			cout << x.at(k) << " ";
+		}
+		cout << "\n";
+		cout <<"INVIAVEL \n";
+	}
+	//printf("aqui\n");
 	int nextchoice[tam_atores];
-	//int nextbound[tam_atores];
+	int nextbound[tam_atores];
 	std::vector<int> cl = calculaCL(l);  // calcula as opcoes viaveis? mas entao pra que serve a linha 12
 	int count = 0;
 	for (int a : cl){	// essa linha funciona em python (for a in Cl:)
 		x.at(l) = a;	// o que eh Xi ?
 		nextchoice[count] = a;				// usado pra descidir as proximas chamadas, talvez seja somente uma escolha binaria simples
-		//nextbound[count] = B(x); // o que faz B()?
+		nextbound[count] = B(x); // o que faz B()?
+		//cout << B(x) << "\n";
 		count++;		//mas por que count
 	}
 	for (int i = 0; i < count; i++){
-		//if (nextbound[i] >= optp) //no caderno ta <= posso estar errado
-		//	return;
+		if (nextbound[i] >= optp && otimalidade == 0) //no caderno ta <= posso estar errado
+			return;
 		x.at(l) = nextchoice[i];	// o que krl eh Xi, n sei nem se eh um i
 		branch_and_bound(l+1);	 //recusao 
 	}
