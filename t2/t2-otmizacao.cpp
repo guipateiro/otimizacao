@@ -18,7 +18,6 @@ class ator{
 };
 
 vector<ator> atores = {}; //vetor de atores
-std::vector<int> inclusao_geral = {};
 std::vector<int> x = {}; 		//melhor conjunto ate agora
 std::vector<int> optx = {}; 	//melhor conjunto ate agora
 int optp = 99999999;	//melhor custo ate agora 
@@ -28,9 +27,6 @@ int tam_personagens;
 
 void ler_entrada(){
 	cin >> tam_inclusao >> tam_atores >> tam_personagens;
-	for (int j = 0; j < tam_inclusao; j++){
-		inclusao_geral.push_back(0);
-	}
 	for (int i = 0; i < tam_atores; i++){
 		x.push_back(0);
 	}
@@ -168,10 +164,11 @@ void branch_and_bound(int l){
 		count++;		//mas por que count
 	}
 	for (int i = 0; i < count; i++){
-		if (nextbound[i] >= optp && otimalidade == 0) //no caderno ta <= posso estar errado
-			return;
-		x.at(l) = nextchoice[i];	// o que krl eh Xi, n sei nem se eh um i
-		branch_and_bound(l+1);	 //recusao 
+		if (nextbound[i] >= optp && otimalidade == 0); //no caderno ta <= posso estar errado
+		else{
+			x.at(l) = nextchoice[i];	// o que krl eh Xi, n sei nem se eh um i
+			branch_and_bound(l+1);	 //recusao
+		} 
 	}
 	return;
 }
