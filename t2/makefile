@@ -1,13 +1,13 @@
 CFLAGS =  -Wall -Wextra
 CC = c++ -g
 
-all: despachar
+all: elenco
 
-despachar: t2-otmizacao.cpp
-	$(CC) $(CFLAGS) $< -o despacho
+elenco: t2-otmizacao.cpp
+	$(CC) $(CFLAGS) $< -o elenco 
 
 clear: 
-	rm -f despacho
+	rm -f elenco 
 
 purge:
-	rm -f despacho
+	rm -f elenco 

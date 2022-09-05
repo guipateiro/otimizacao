@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 #include<iostream>
+#include <sys/time.h>
 using namespace std;
 
 
@@ -7,8 +8,8 @@ using namespace std;
 
 int viabilidade = 0;	//cotes de viabilidade
 int otimalidade = 0;	//corte de otimalidade
-int old_func = 0;			//usar a funcao velha
-
+int old_func = 0;		//usar a funcao velha
+int nodos = 0;			//contador de nodos
 
 
 class ator{
@@ -34,11 +35,11 @@ void ler_entrada(){
 		ator aux; 
 		int count;
 		cin >> aux.preco >> count;
-		cout << aux.preco << " " <<count << "\n";
+		//cout << aux.preco << " " <<count << "\n";
 		for (int j = 0; j < count; j++){
 			int aux2;
 			cin >> aux2;
-			cout << aux2<< "\n";
+			//cout << aux2<< "\n";
 			aux.inclusao.push_back(aux2);
 		}
 		//cout << aux.inclusao.size() << "\n";
@@ -71,7 +72,7 @@ int viavel(std::vector<int> x){
 				}
 			}	
 		}
-		cout << "entrada = " ;
+		/*cout << "entrada = " ;
 		for (uint k = 0; k < x.size(); ++k){
 			cout << x.at(k) << " ";
 		}
@@ -80,7 +81,7 @@ int viavel(std::vector<int> x){
 		for (uint k = 0; k < inclusao_a.size(); ++k){
 			cout << inclusao_a.at(k) << " ";
 		}
-		cout << "\n";
+		cout << "\n";*/
 		for (uint k = 0; k < inclusao_a.size(); ++k){
 			if (inclusao_a.at(k) == 0){
 				return 0;
@@ -110,29 +111,76 @@ std::vector<int> calculaCL(int l){
 	return cl;
 }
 
-int menor_ator(std::vector<int> x){
+int menor_ator(std::vector<int> x,int l){
 	int menor = 99999999;
-	for (uint i = 0; i < x.size(); i++){
+	for (uint i = l; i < x.size(); i++){
 		if (x.at(i) == 0 && atores.at(i).preco < menor){
-			cout << "menor = " << atores.at(i).preco << "\n";
+			//cout << "menor = " << atores.at(i).preco << "\n";
 			menor = atores.at(i).preco;
 		}
 	}
 	return menor;
 }
 
-int B(std::vector<int> x){
+int B(std::vector<int> x,int l){
 	int base = profit(x);
 	int soma = 0;
 	for (uint i = 0; i < x.size(); i++){
 			soma += x.at(i);
 		}
 	if(soma < tam_personagens){
-		base += (tam_personagens - soma) * menor_ator(x);
+		base += (tam_personagens - soma) * menor_ator(x,l);
 	}
-	cout << "B = " << base << "\n";
+	//cout << "B = " << base << "\n";
 	return base;	
 }
+
+int profit_min_expec(std::vector<int> x, int l, int soma){
+	
+	//nao ha atores restantes suficientes
+	if (((int)x.size() - l) < soma){
+		//cout << "FALHA\n" ; 
+		return 99999999;
+	}
+	std::vector<int> aux(x.size(),0);
+	//copy(x.begin(), x.end(), back_inserter(aux));  
+	int j = l;
+	for (int t = 0; t < soma; t++){
+		int menor = 99999999;
+		for (uint i = l; i < aux.size(); i++){
+			if (aux.at(i) == 0 && atores.at(i).preco < menor){
+				//cout << "menor = " << atores.at(i).preco << "\n";
+				j = i; 
+				menor = atores.at(i).preco;
+			}
+		}
+		//cout << "\n";
+		aux.at(j) = 1;
+	}	
+	int algo =  profit(aux);
+	//cout << "L = " << l << "\n";
+	//cout << "algo = "  << algo << "\n";
+	return algo;
+}
+
+
+int B_novo(std::vector<int> x,int l){
+	int base = profit(x);
+	int soma = 0;
+	for (uint i = 0; i < x.size(); i++){
+		soma += x.at(i);
+	}
+	//cout << "personagens: "<< soma << " / " << tam_personagens <<  " espaco" << x.size() - l << " - " << tam_personagens - soma << " = " << int(x.size() - l - (tam_personagens - soma))<<  "\n"; 
+	if(soma < tam_personagens){
+		soma = tam_personagens - soma;	
+		base += profit_min_expec(x,l,soma);
+	}
+	//cout << "B = " << base << "\n";
+	return base;	
+}
+
+
+
 //mais comentado so se eu comentar os comentarios
 void branch_and_bound(int l){
 	int P = 0; 
@@ -143,15 +191,15 @@ void branch_and_bound(int l){
 			optx = x; //optx atualizado de revesgueio na batalha de P e optp 
 		}
 	}
-	else{
+	/*else{
 		cout << "entrada = " ;
 		for (uint k = 0; k < x.size(); ++k){
 			cout << x.at(k) << " ";
 		}
 		cout << "\n";
 		cout <<"INVIAVEL \n";
-	}
-	//printf("aqui\n");
+	}*/
+	nodos++;
 	int nextchoice[tam_atores];
 	int nextbound[tam_atores];
 	std::vector<int> cl = calculaCL(l);  // calcula as opcoes viaveis? mas entao pra que serve a linha 12
@@ -159,7 +207,11 @@ void branch_and_bound(int l){
 	for (int a : cl){	// essa linha funciona em python (for a in Cl:)
 		x.at(l) = a;	// o que eh Xi ?
 		nextchoice[count] = a;				// usado pra descidir as proximas chamadas, talvez seja somente uma escolha binaria simples
-		nextbound[count] = B(x); // o que faz B()?
+		if(old_func == 0)
+			nextbound[count] = B_novo(x,l); // o que faz B()?
+		else{
+			nextbound[count] = B(x,l);
+		}
 		//cout << B(x) << "\n";
 		count++;		//mas por que count
 	}
@@ -199,7 +251,18 @@ int main (int argc,char **argv){
 		}
 	}
 	ler_entrada(); 	// le a entrada de stdin 
+	struct timeval inicio, fim;
+	gettimeofday(&inicio, NULL);
 	branch_and_bound(0);	 	// aqui eh onde a magia deve acontecer
+	gettimeofday(&fim, NULL);
+	double tempo_exec;
+  
+    tempo_exec = (fim.tv_sec - inicio.tv_sec) * 1e6;
+    tempo_exec = (tempo_exec + (fim.tv_usec - 
+                              inicio.tv_usec)) * 1e-6;
+	//double tempo_exec = double(fim - inicio) / double(CLOCKS_PER_SEC);
+	cerr << "tempo de execusao: " << fixed << tempo_exec << setprecision(5) << " sec \n";
+	cerr << "nodos explorados: " << nodos << " de " << ((2 << tam_atores) - 1) << "\n";
 	// a saida real eh quase tao avancada quanto o q vc ta vendo
 	if (optx.size() == 0){
 		cout << "inviavel\n";
