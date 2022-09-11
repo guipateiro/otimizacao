@@ -49,7 +49,7 @@ void ler_entrada(){
 	}
 }
 
-int profit(std::vector<int> x){
+int total_cost(std::vector<int> x){
 	int preco = 0;
 	for (uint i = 0; i < x.size(); i++){
 		preco += x[i] * atores[i].preco;
@@ -115,7 +115,7 @@ int menor_ator(std::vector<int> x,int l){
 }
 
 int B(std::vector<int> x,int l){
-	int base = profit(x);
+	int base = total_cost(x);
 	int soma = 0;
 	for (uint i = 0; i < x.size(); i++){
 			soma += x[i];
@@ -126,7 +126,7 @@ int B(std::vector<int> x,int l){
 	return base;	
 }
 
-int profit_min_expec(std::vector<int> x, int l, int soma){
+int total_cost_min_expec(std::vector<int> x, int l, int soma){
 	
 	//nao ha atores restantes suficientes
 	if (((int)x.size() - l) < soma){
@@ -145,20 +145,20 @@ int profit_min_expec(std::vector<int> x, int l, int soma){
 		}
 		aux[j] = 1;
 	}	
-	int algo =  profit(aux);
+	int algo =  total_cost(aux);
 	return algo;
 }
 
 
 int B_novo(std::vector<int> x,int l){
-	int base = profit(x);
+	int base = total_cost(x);
 	int soma = 0;
 	for (uint i = 0; i < x.size(); i++){
 		soma += x[i];
 	}
 	if(soma < tam_personagens){
 		soma = tam_personagens - soma;	
-		base += profit_min_expec(x,l,soma);
+		base += total_cost_min_expec(x,l,soma);
 	}
 	return base;	
 }
@@ -168,7 +168,7 @@ int B_novo(std::vector<int> x,int l){
 void branch_and_bound(int l){
 	int P = 0; 
 	if(viavel(x)){
-		P = profit(x); //calcula o custo dessa solucao
+		P = total_cost(x); //calcula o custo dessa solucao
 		if(P < optp){  //max(P, opt)
 			optp = P;
 			optx = x;
