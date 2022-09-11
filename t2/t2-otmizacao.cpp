@@ -11,7 +11,10 @@ int viabilidade = 0;	//cotes de viabilidade
 int otimalidade = 0;	//corte de otimalidade
 int old_func = 0;		//usar a funcao velha
 int nodos = 0;			//contador de nodos
-
+int cortes_viabilidade = 0; //contador de cortes por viabilidade
+int cortes_otimalidade = 0; //contador de cortes por otimalidade 
+long poda_otm = 0;		//contador de nodos podados por cortes de otimalidade
+long poda_via = 0;		//contador de nodos podados por cortes de viabilidade
 
 class ator{
 	public:
@@ -83,17 +86,21 @@ int viavel(std::vector<int> x){
 std::vector<int> calculaCL(int l){
 	std::vector<int> cl = {1,0} ;
 	int soma = 0;
+	if (l == tam_atores){
+		cl = {};
+		return cl;	
+	}
 	if (viabilidade == 0){
 		for (uint i = 0; i < x.size(); i++){
-			soma += x[i];
+			soma += x.at(i);
 		}
 		if (soma >= tam_personagens){
 			cl = {0};
+			cortes_viabilidade++;
+			poda_via += ((2 <<(tam_atores - l - 1)) - 1);
 		} 
-	}	
-	if (l == tam_atores){
-		cl = {};
-	}	
+
+	}		
 	return cl;
 }
 
@@ -123,13 +130,13 @@ int profit_min_expec(std::vector<int> x, int l, int soma){
 	
 	//nao ha atores restantes suficientes
 	if (((int)x.size() - l) < soma){
-		return INF;
+		return INF-1;
 	}
 	std::vector<int> aux(x.size(),0);
 
 	int j = l;
 	for (int t = 0; t < soma; t++){
-		int menor = INF;
+		int menor = INF-1;
 		for (uint i = l; i < aux.size(); i++){
 			if (aux[i] == 0 && atores[i].preco < menor){
 				j = i; 
@@ -184,7 +191,10 @@ void branch_and_bound(int l){
 		count++;
 	}
 	for (int i = 0; i < count; i++){
-		if (nextbound[i] >= optp && otimalidade == 0); 
+		if (nextbound[i] >= optp && otimalidade == 0){
+			cortes_otimalidade++;
+			poda_otm += ((2 <<(tam_atores - l - 1)) - 1);
+		}
 		else{
 			x[l] = nextchoice[i];	
 			branch_and_bound(l+1);	 //recursao
@@ -195,14 +205,28 @@ void branch_and_bound(int l){
 
 
 void imprimesaida(){
-	for (uint i = 0; i < optx.size(); ++i){
-		if (optx[i] == 1){
-			cout << i+1 << " ";
+	int k = 0;
+	
+	cerr << "cortes por viabilidade: " << cortes_viabilidade << " (nodos podados: " << poda_via << ")\n";
+	cerr << "cortes por otimalidade: " << cortes_otimalidade << " (nodos podados: " << poda_otm << ")\n";
+
+	if (optx.size() == 0){
+		cout << "inviavel\n";
+		return ;
+	}
+	for (uint i = 0; i < optx.size(); i++){
+		if (optx.at(i) == 1){
+			cout << i+1;
+			k++;
+			if (k != tam_personagens){
+				cout <<" ";
+			}
 		}
 	}
 
 	cout << "\n" << optp << "\n";  
 }
+
 int main (int argc,char **argv){
 	for (int i = 1; i < argc; i++){
 		if (!strcmp(argv[i],"-a")){
@@ -228,15 +252,10 @@ int main (int argc,char **argv){
     tempo_exec = (fim.tv_sec - inicio.tv_sec) * 1e6;
     tempo_exec = (tempo_exec + (fim.tv_usec - 
                               inicio.tv_usec)) * 1e-6;
-	#ifdef DEBUG
+
 	cerr << "tempo de execucao: " << fixed << tempo_exec << setprecision(5) << " sec \n";
 	cerr << "nodos explorados: " << nodos << " de " << ((2 << tam_atores) - 1) << "\n";
-	#endif
-	
-	if (optx.size() == 0){
-		cout << "inviavel\n";
-		return 1;
-	}
+
 	imprimesaida();	
 	
 	return 1;
