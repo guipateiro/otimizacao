@@ -229,7 +229,7 @@ int main (int argc,char **argv){
     tempo_exec = (tempo_exec + (fim.tv_usec - 
                               inicio.tv_usec)) * 1e-6;
 	
-	cerr << "tempo de execusao: " << fixed << tempo_exec << setprecision(5) << " sec \n";
+	cerr << "tempo de execucao: " << fixed << tempo_exec << setprecision(5) << " sec \n";
 	cerr << "nodos explorados: " << nodos << " de " << ((2 << tam_atores) - 1) << "\n";
 	if (optx.size() == 0){
 		cout << "inviavel\n";
