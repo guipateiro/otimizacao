@@ -228,9 +228,11 @@ int main (int argc,char **argv){
     tempo_exec = (fim.tv_sec - inicio.tv_sec) * 1e6;
     tempo_exec = (tempo_exec + (fim.tv_usec - 
                               inicio.tv_usec)) * 1e-6;
-	
+	#ifdef DEBUG
 	cerr << "tempo de execucao: " << fixed << tempo_exec << setprecision(5) << " sec \n";
 	cerr << "nodos explorados: " << nodos << " de " << ((2 << tam_atores) - 1) << "\n";
+	#endif
+	
 	if (optx.size() == 0){
 		cout << "inviavel\n";
 		return 1;
